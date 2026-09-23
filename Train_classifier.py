@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
+from sklearn.metrics import classification_report, confusion_matrix
 
 transform = transforms.ToTensor()
 
@@ -91,15 +92,30 @@ for epoch in range(EPOCHS):
 # test
 
 model.eval()
-correct = 0
-total = 0
+all_preds = []
+all_labels = []
 
 with torch.no_grad():
     for images, labels in test_loader:
         outputs = model(images)
         predicted = outputs.argmax(dim=1)
-        correct += (predicted == labels).sum().item()
-        total += labels.size(0)
+        all_preds.extend(predicted.tolist())
+        all_labels.extend(labels.tolist())
 
-accuracy = 100 * correct / total
-print(f"\nTest accuracy: {accuracy:.2f}%({correct}/{total})")
+accuracy = 100 * sum(p == l for p, l in zip(all_preds, all_labels)) / len(all_labels)
+print(f"\nOverall accuracy: {accuracy:.2f}%")
+
+print("\n--- Per-class resport---")
+print(classification_report(all_labels, all_preds, target_names=CLASS_NAMES))
+
+print("--- Confusion matrix ---")
+cm = confusion_matrix(all_labels, all_preds)
+header = "       " + " ".join(f"{i:4d}" for i in range(10))
+print(header)
+for i, row in enumerate(cm):
+    print(f"true {i}: " + " ".join(f"{v:4d}" for v in row))
+print(
+    "\n(class indices: "
+    + ", ".join(f"{i}={name}" for i, name in enumerate(CLASS_NAMES))
+    + ")"
+)
