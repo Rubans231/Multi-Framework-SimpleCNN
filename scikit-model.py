@@ -40,7 +40,7 @@ print(f"x_train shape: {x_train.shape}")
 #  Train
 
 print("\nTraining LogisticRegression...")
-clf = LogisticRegression(max_iter=200)
+clf = LogisticRegression(max_iter=1000)
 clf.fit(x_train, y_train)
 
 
