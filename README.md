@@ -11,3 +11,7 @@ re-visiting basics by making projects
 ## Scikit
 
 ![Scikit-result](assets/screenshot_20260923_104940.png)
+
+## Tensorflow Keras
+
+![](assets/screenshot_20260928_180843.png)
