@@ -36,8 +36,19 @@ print(x.at[:3].max(5))
 print(jnp.array([1.0, 5.0]).dtype)
 
 # Numpy provides int32 and float16 to float64 but jax keeps the float16
-
 d = np.arange(3, dtype=np.int32)
 i = np.ones(3, dtype=np.float16)
 print((d + i).dtype)  # numpy
 print((jnp.asarray(d) + jnp.asarray(i)).dtype)  # JAX
+
+# indexing is similar to np but exception raising doesn't exist, For example:
+h = jnp.arange(10)
+h[11]  # clamped to h[9]
+
+h.at[11].set(67)  # update is dropped
+# both the above behaviors can be changed with mode argument
+
+# JAX.numpy requires passing an array or python scalar rather than silently converting smth like jnp.sum([1, 2])
+# This is due to silent conversions being known to cause hidden performance problems
+# make arrays explicitly
+print(jnp.sum(jnp.array([1.0, 2.0, 3.0])))
