@@ -52,3 +52,10 @@ h.at[11].set(67)  # update is dropped
 # This is due to silent conversions being known to cause hidden performance problems
 # make arrays explicitly
 print(jnp.sum(jnp.array([1.0, 2.0, 3.0])))
+
+# A JAX array lives on one or more devices like CPU, GPU or TPU. JAX code runs on em all.
+# Typically allocates arrays to accelerators as default
+# An array can even be sharded across multiple devices so JAX can run on one or thousand chips
+# Every array carries a sharding attribute describing data placement
+
+print(x.sharding)
