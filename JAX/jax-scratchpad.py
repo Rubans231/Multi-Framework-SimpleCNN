@@ -30,3 +30,14 @@ print(y)
 
 print(x.at[4].add(67))
 print(x.at[:3].max(5))
+
+# JAX defaults to 32-bit which is good for accelerators, while np makes 64bit by def
+# JAX actually disables 64-bit altogether and can only be enabled through config change
+print(jnp.array([1.0, 5.0]).dtype)
+
+# Numpy provides int32 and float16 to float64 but jax keeps the float16
+
+d = np.arange(3, dtype=np.int32)
+i = np.ones(3, dtype=np.float16)
+print((d + i).dtype)  # numpy
+print((jnp.asarray(d) + jnp.asarray(i)).dtype)  # JAX
