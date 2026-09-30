@@ -90,7 +90,8 @@ print(dfdx(2.0))
 print(d2fdx(1.0))
 print(d3fdx(1.0))
 
-# Diff with respect to different arguments:
+# --------------------- Diff with respect to different arguments ---------------------
+print("--------------------- Differentiation and grad ---------------------")
 
 # jax.grad defaults to differentiation with respect to the first argument
 # argnums can be used to select other arguments or several at once
@@ -141,3 +142,33 @@ print(f"{b_grad = }")
 W_grad, b_grad = jax.grad(loss, (0, 1))(W, b)
 print(f"{W_grad = }")
 print(f"{b_grad = }")
+
+# jax.value_and_grad can compute both value and grad values in one pass
+loss_value, Wb_grad = jax.value_and_grad(loss, (0, 1))(W, b)
+print(loss_value)
+
+
+# a function passed into grad is expected to be returning a scalar value into grad,
+# but if you want the passed function to also have values that dont need to be Differentiated by grad and just left alone,
+# then use has_aux=True
+def loss_and_preds(W, b):
+    preds = predict(W, b, inputs)
+    label_probs = preds * targets + (1 - preds) * (1 - targets)
+    return -jnp.sum(jnp.log(label_probs)), preds
+
+
+W_grad, preds = jax.grad(loss_and_preds, argnums=(0, 1), has_aux=True)(W, b)
+print(f"{W_grad = }")
+print(f"{preds = }")
+
+# --------------------- Checking derivatives numerically ---------------------
+eps = 1e-4
+b_grad_numerical = (loss(W, b + eps / 2.0) - loss(W, b - eps / 2.0)) / eps
+b_grad_autodiff = jax.grad(loss, 1)(W, b)
+print(f"{b_grad_numerical = }")
+print(f"{b_grad_autodiff = }")
+
+# jax alternative to checking derivatives manually
+from jax.test_util import check_grads
+
+print(check_grads(loss, (W, b), order=2))  # check up to 2nd order derivatives
