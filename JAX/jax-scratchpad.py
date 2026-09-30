@@ -172,3 +172,72 @@ print(f"{b_grad_autodiff = }")
 from jax.test_util import check_grads
 
 print(check_grads(loss, (W, b), order=2))  # check up to 2nd order derivatives
+
+# --------------------- jax.vmap ---------------------
+print("--------------------- jax.vmap ---------------------")
+
+# jax.vmap() transforms a func written for single inputs into working efficiently on batches of inputs.
+# example convolution of two one-dimensional vectors:
+x = jnp.arange(5.0)
+w = jnp.array([2.0, 3.0, 4.0])
+
+
+def convolve(x, w):
+    output = []
+    for i in range(len(x) - 2):
+        output.append(jnp.dot(x[i : i + 3], w))
+    return jnp.array(output)
+
+
+print(convolve(x, w))
+
+# Lets say we need to do the following for a whole batch of x and w
+xs = jnp.stack([x, x])
+ws = jnp.stack([w, w])
+# We can naive loop over the batch but thats inefficient for a GPU
+# We can use jax.vmap instead to auto vectorize over the batch
+
+auto_batch_convolve = jax.vmap(convolve)
+print(auto_batch_convolve(xs, ws))
+
+# by default, vmap maps over the leading axis of every input.
+# The in_axes and out_axes can be used to override this
+auto_batch_convolve_again = jax.vmap(convolve, in_axes=1, out_axes=1)
+
+xst = jnp.transpose(xs)
+wst = jnp.transpose(ws)
+
+print(auto_batch_convolve_again(xst, wst))
+
+# we can also pass a value and not have it map to anything by using None in_axes
+# a single vmap acesses one array, two vmap nested can do two arrays, etc..
+
+auto_batch_convolve_v3 = jax.vmap(convolve, in_axes=(0, None))
+
+print(auto_batch_convolve_v3(xs, w))
+
+
+# nested vmap for multi dimensions
+def dist(x, y):
+    return jnp.sqrt(jnp.sum((x - y) ** 2))
+
+
+def all_pairs(f):
+    return jax.vmap(jax.vmap(f, in_axes=(None, 0)), in_axes=(0, None))
+
+
+points = jnp.array([[0.0, 0.0], [1.0, 0.0], [0.0, 2.0]])
+print(f"{all_pairs(dist)(points, points)}")
+
+
+# vmap with grad
+def example_loss(W, b, x, y):
+    pred = predict(W, b, x)
+    label_prob = pred * y + (1 - pred) * (1 - y)
+    return -jnp.log(label_prob)
+
+
+per_example_grads = jax.vmap(jax.grad(example_loss, (0, 1)), in_axes=(None, None, 0, 0))
+W_grads, b_grads = per_example_grads(W, b, inputs, targets)
+print(W_grads)  # one gradient per example
+print(b_grads)
