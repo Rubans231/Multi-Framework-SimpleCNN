@@ -89,3 +89,55 @@ d3fdx = jax.grad(d2fdx)  # 6
 print(dfdx(2.0))
 print(d2fdx(1.0))
 print(d3fdx(1.0))
+
+# Diff with respect to different arguments:
+
+# jax.grad defaults to differentiation with respect to the first argument
+# argnums can be used to select other arguments or several at once
+# Below is a logistic regression model where we might want gradients with respect to weights and bias
+
+
+def sigmoid(x):
+    return (
+        0.5 * (jnp.tanh(x / 2) + 1)
+    )  # hyprbolic tan which simplifies to 1/(1+e^-x) which is a sigmoid. In simple terms, we squash the values into the range of 0.0 to 1.0
+
+
+# Outputs probability of a label being true
+def predict(W, b, inputs):
+    return sigmoid(jnp.dot(inputs, W) + b)
+
+
+# toy dataset
+inputs = jnp.array(
+    [[0.52, 1.12, 0.77], [0.88, -1.08, 0.15], [0.52, 0.06, -1.30], [0.74, -2.49, 1.39]]
+)
+
+targets = jnp.array([True, True, False, True])
+W = jnp.array([0.1, 0.4, -0.3])
+b = 0.5
+
+
+# Training loss is the neg log-likelihood of the training examples
+def loss(W, b):
+    preds = predict(W, b, inputs)
+    label_probs = preds * targets + (1 - preds) * (1 - targets)
+    return -jnp.sum(jnp.log(label_probs))
+
+
+# Differentiate loss with respect to the first positional argument
+W_grad = jax.grad(
+    loss, argnums=0
+)(
+    W, b
+)  # argnums=0 is the default, so not explicitly mentioning also defaults to Differentiate with respect to the first element here(W)
+print(f"{W_grad = }")
+
+# You can choose diff vals too and drop the keyword
+b_grad = jax.grad(loss, 1)(W, b)
+print(f"{b_grad = }")
+
+# Tuple values for argnums and dropping the keyword is possible too
+W_grad, b_grad = jax.grad(loss, (0, 1))(W, b)
+print(f"{W_grad = }")
+print(f"{b_grad = }")
