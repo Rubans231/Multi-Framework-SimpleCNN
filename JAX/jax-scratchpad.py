@@ -59,3 +59,33 @@ print(jnp.sum(jnp.array([1.0, 2.0, 3.0])))
 # Every array carries a sharding attribute describing data placement
 
 print(x.sharding)
+
+# jax.lax can be used when numpy doesn't cut it at very niche needs.
+# as a good practice stick to jnp as it is stable than JAX.lax
+
+# ---------------------- TRANSFORMATIONS ----------------------
+
+print("\n---------------------- TRANSFORMATIONS ----------------------")
+# jax.grad() -> computes its gradient via automatic differentiation
+# jav.vmap() -> from single examples to operating efficiently over batches via automatic vectorization
+
+# The above two are direct transformation functions while the third below is just a performance transformation
+# jax.jit() -> compiles the function so it runs fast
+
+# AUTO DIFFERENTIATION
+# jax.grad() takes a scalar-valued func and returns a new func that computes its gradient:
+
+grad_tanh = jax.grad(jnp.tanh)
+print(grad_tanh(2.0))
+
+# you can stack functions and calculate grad for previous grad and thus take repeated derivatives
+
+f = lambda x: x**3 + 2 * x**2 - 3 * x + 1
+
+dfdx = jax.grad(f)  # 3x^2 + 4x - 3
+d2fdx = jax.grad(dfdx)  # 6x + 4
+d3fdx = jax.grad(d2fdx)  # 6
+
+print(dfdx(2.0))
+print(d2fdx(1.0))
+print(d3fdx(1.0))
