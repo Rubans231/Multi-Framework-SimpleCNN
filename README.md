@@ -26,3 +26,7 @@ Flax/JAX (NNX)   89.34%
 ### Transfer Learning
 
 ![](assets/screenshot_20261002_075148.png)
+
+### Flax
+
+![](assets/screenshot_20261002_144339.png)
