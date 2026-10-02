@@ -15,3 +15,7 @@ re-visiting basics by making projects
 ## Tensorflow Keras
 
 ![](assets/screenshot_20260928_180843.png)
+
+## Transfer Learning
+
+![](assets/screenshot_20261002_075148.png)
