@@ -82,3 +82,20 @@ for epoch in range(3):
     print(f"epoch: {epoch+1}/3")
     print(f"loss: {running_loss/len(base_train_loader):.4f}")
 
+print("\n ---------------------- Transfer Learning on the pretrained layers ----------------------")
+
+for param in base_model.conv1.parameters():
+    param.requires_grad = False
+for param in base_model.conv2.parameters():
+    param.requires_grad = False
+
+base_model.fc1 = nn.Linear(32 * 7 * 7, 128)
+base_model.fc2 = nn.Linear(128, 10)
+
+full_train_loader = DataLoader(full_train, batch_size=64, shuffle=True)
+full_train_loader = DataLoader(full_test, batch_size=64, shuffle=False)
+
+transfer_optimizer = optim.Adam(
+    list(base_model.fc1.parameters()) + list(base_model.fc2.parameters()),
+    lr = 0.001,
+)
