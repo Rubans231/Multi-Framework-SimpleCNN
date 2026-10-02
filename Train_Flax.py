@@ -64,3 +64,37 @@ def loss_fn(model, x, y):
     logits = model(x)
     loss = optax.softmax_cross_entropy_with_integer_labels(logits, y).mean()
     return loss, logits
+
+
+@nnx.jit
+def train_step(model, optimizer, x, y):
+    grad_fn = nnx.value_and_grad(loss_fn, has_aux=True)
+    (loss, logits), grads = grad_fn(model, x, y)
+    optimizer.update(model, grads)
+    return loss
+
+
+BATCH_SIZE = 64
+EPOCHS = 3
+n_batches = len(x_train) // BATCH_SIZE
+
+for epoch in range(EPOCHS):
+    perm = np.random.permutation(len(x_train))
+    running_loss = 0.0
+    for i in range(n_batches):
+        idx = perm[i * BATCH_SIZE : (i + 1) * BATCH_SIZE]
+        xb = jnp.array(x_train[idx])
+        yb = jnp.array(y_train[idx])
+        loss = train_step(model, optimizer, xb, yb)
+        running_loss += float(loss)
+    print(f"Epoch {epoch + 1}/{EPOCHS} --- avg loss: {running_loss / n_batches:.4f}")
+
+# ---------------------- Evaluate ----------------------
+correct = 0
+for i in range(0, len(x_test), BATCH_SIZE):
+    xb = jnp.array(x_test[i : i + BATCH_SIZE])
+    yb = y_test[i : i + BATCH_SIZE]
+    preds = jnp.argmax(model(xb), axis=1)
+    correct += int((preds == jnp.array(yb)).sum())
+
+print(f"\nTest accuracy: {100 * correct / len(x_test):.2f}%")
