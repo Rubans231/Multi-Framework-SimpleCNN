@@ -39,6 +39,10 @@ y_train = load_labels(f"{RAW}/train-labels-idx1-ubyte")
 x_test = load_images(f"{RAW}/t10k-images-idx3-ubyte")
 y_test = load_labels(f"{RAW}/t10k-labels-idx1-ubyte")
 
+x_train = x_train[..., np.newaxis]
+x_test = x_test[..., np.newaxis]
+print("x_train shape", x_train.shape)
+
 
 class SimpleCNN(nnx.Module):
     def __init__(self, num_classes: int, rngs: nnx.Rngs):
@@ -54,6 +58,7 @@ class SimpleCNN(nnx.Module):
         x = nnx.max_pool(x, window_shape=(2, 2), strides=(2, 2))
         x = x.reshape(x.shape[0], -1)
         x = nnx.relu(self.fc1(x))
+        return self.fc2(x)
 
 
 model = SimpleCNN(num_classes=10, rngs=nnx.Rngs(0))
